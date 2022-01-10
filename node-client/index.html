@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<body>
+    <h1>hello i am from back end</h1>
+    <form action="/add" method="post">
+        <input type="text" placeholder="name" name="name"/>
+        <input type="text" placeholder="price" name="price"/>
+        <input type="text" placeholder="quantity" name="quantity"/>
+        <input type="submit" value="adduser" />
+    </form>
+
+    <div class="user-box">
+
+    </div>
+
+    <div class="update-box">
+
+    </div>
+
+    <script>
+
+        function loaduser(){
+
+            fetch(`http://localhost:3200/users`)
+            .then( res => res.json() )
+            .then(data => {
+                const box = document.querySelector(".user-box");
+                box.innerHTML = ""
+                data.forEach(user => {
+                    const item = document.createElement("p");
+                    item.innerHTML=`name : ${user.name}
+                    Price : ${user.price}
+                    quantity : ${user.quantity}
+                    <button onclick="loadproduct('${user._id}')">update</button> 
+                    <button onclick="deleteuser( event , '${user._id}' )">delete</button>`;
+                    box.appendChild(item);
+                });
+                console.log(data)
+            })
+        }
+
+        loaduser()
+
+        function deleteuser(event , id)
+        {
+            console.log(id)
+            fetch(`http://localhost:3200/delete/${id}`,{
+                method:"DELETE"
+            })
+            .then( res => res.json())
+            .then( result => {
+                if(result)
+                {
+                    event.target.parentNode.style.display="none";
+                }
+            })
+        }
+         
+        function loadproduct (id)
+        {
+            console.log(id);
+            fetch(`http://localhost:3200/user/${id}`)
+            .then( res => res.json())
+            .then( data => {
+                const update = document.querySelector(".update-box");
+                update.innerHTML = `<b>Update : ${data._id}</b>
+                <br>
+                price : <input type="text" value="${data.price}" id="price">
+                <br>
+                quantity : <input type="text" value="${data.quantity}" id="quantity">
+                <br>
+                <input type="submit" value="submit" onclick="updateuser('${data._id}')">
+                `
+                console.log(data)
+            })
+        }
+
+        function updateuser(id)
+        {
+            // console.log("updated")
+            const quantity = document.querySelector("#quantity").value;
+            const price = document.querySelector("#price").value;
+            const product = {id,quantity,price};
+            fetch(`http://localhost:3200/update/${id}`,{
+                method : "PATCH",
+                headers : { "Content-Type" : "application/json" },
+                body : JSON.stringify(product)
+            })
+            .then ( res => res.json())
+            .then (data => {
+                if(data)
+                {
+                    loaduser();
+                    document.querySelector(".update-box").innerHTML="";
+                }
+            })
+        }
+    </script>
+
+</body>
+</html>
